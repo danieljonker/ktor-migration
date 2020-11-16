@@ -21,8 +21,7 @@ class PostsViewModel(private val postsRepo: PostsRepo) : ViewModel() {
     }
 }
 
-class PostsViewModelFactory(retrofit: Retrofit) : ViewModelProvider.Factory {
-    private val postsRepo: PostsRepo = RetrofitPostsRepo(retrofit)
+class PostsViewModelFactory(private val postsRepo: PostsRepo) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(PostsViewModel::class.java)) {

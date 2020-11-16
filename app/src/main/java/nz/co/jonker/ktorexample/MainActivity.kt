@@ -14,26 +14,42 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import io.ktor.client.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.serialization.json.Json
+import nz.co.jonker.ktorexample.posts.KtorPostsRepo
 import nz.co.jonker.ktorexample.posts.Post
+import nz.co.jonker.ktorexample.posts.RetrofitPostsRepo
 import okhttp3.MediaType
 import retrofit2.Retrofit
 
+const val BASE_URL = "https://jsonplaceholder.typicode.com"
+
+private val httpClient = HttpClient() {
+    install(JsonFeature) {
+        serializer = KotlinxSerializer()
+    }
+}
+
+private val retrofit = Retrofit.Builder()
+    .baseUrl(BASE_URL)
+    .addConverterFactory(Json.asConverterFactory(MediaType.get("application/json")))
+    .build()
+
 class MainActivity : AppCompatActivity() {
+
+    private val retrofitPostsRepo = RetrofitPostsRepo(retrofit)
+    private val ktorPostsRepo = KtorPostsRepo(httpClient)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://jsonplaceholder.typicode.com")
-            .addConverterFactory(Json.asConverterFactory(MediaType.get("application/json")))
-            .build()
-
         val viewModel: PostsViewModel = ViewModelProvider(
             this,
-            PostsViewModelFactory(retrofit)
+            PostsViewModelFactory(ktorPostsRepo)
         ).get(PostsViewModel::class.java)
 
         posts_recycler.layoutManager = LinearLayoutManager(this)
